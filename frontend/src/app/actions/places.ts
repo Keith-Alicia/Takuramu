@@ -140,13 +140,9 @@ export async function createPlace(formData: FormData) {
 
     if (!portfolio) throw new Error('権限がありません')
 
-    // Simulated AI Processing (Mock)
-    const audioFile = formData.get('audio_file') as File | null
-    // Temporarily disable audio file requirement to allow testing
-    // if (!audioFile) throw new Error('音声ファイルが必要です')
-
-    // AIのダミーレスポンス
-    const aiGeneratedText = "静かで落ち着いた雰囲気の店内。シェフのこだわりが詰まった料理の数々に感動しました。また特別な日に訪れたいと思える、素晴らしい体験でした。"
+    // AIの生成テキストを受け取る
+    const aiGeneratedText = formData.get('ai_generated_text') as string
+    if (!aiGeneratedText) throw new Error('生成された記事テキストが必要です')
 
     // 1. Insert place
     const { data: place, error: placeError } = await supabase
