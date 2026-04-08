@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, Share, ArrowLeft, ExternalLink } from "lucide-react";
-import Image from "next/image";
 import { getPortfolio } from "../../../actions/portfolios";
-import { getPlaces } from "../../../actions/places";
+import { getPlaces, deletePlace } from "../../../actions/places";
+import { PhotoCarousel } from "@/components/features/PhotoCarousel";
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -68,29 +68,28 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
           {places.map((place) => (
             <div key={place.id} className="group relative border border-border/50 rounded-2xl overflow-hidden bg-card transition-colors hover:bg-muted/10">
               <div className="aspect-[4/3] w-full bg-muted relative overflow-hidden">
-                {place.photos[0] ? (
-                  <Image 
-                    src={place.photos[0].storage_url} 
-                    alt="お店の写真" 
-                    fill 
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground font-light text-sm">
-                    No Photo
-                  </div>
-                )}
+                <PhotoCarousel photos={place.photos} index={0} />
               </div>
               <div className="p-6 md:p-8">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="font-serif text-lg font-medium text-foreground">
                     {place.name || "名称未設定"}
                   </h3>
-                  <Link href={`/dashboard/p/${portfolioId}/edit/${place.id}`}>
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
-                      編集
-                    </Button>
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link href={`/dashboard/p/${portfolioId}/edit/${place.id}`}>
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                        編集
+                      </Button>
+                    </Link>
+                    <form action={async () => {
+                      "use server";
+                      await deletePlace(place.id, portfolioId);
+                    }}>
+                      <Button variant="ghost" size="sm" type="submit" className="h-8 px-2 text-destructive/70 hover:text-destructive">
+                        削除
+                      </Button>
+                    </form>
+                  </div>
                 </div>
                 <p className="font-serif leading-relaxed text-sm md:text-base text-card-foreground">
                   {place.ai_generated_text}
