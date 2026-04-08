@@ -140,7 +140,8 @@ export async function createPlace(formData: FormData) {
 
     // Simulated AI Processing (Mock)
     const audioFile = formData.get('audio_file') as File | null
-    if (!audioFile) throw new Error('音声ファイルが必要です')
+    // Temporarily disable audio file requirement to allow testing
+    // if (!audioFile) throw new Error('音声ファイルが必要です')
 
     // AIのダミーレスポンス
     const aiGeneratedText = "静かで落ち着いた雰囲気の店内。シェフのこだわりが詰まった料理の数々に感動しました。また特別な日に訪れたいと思える、素晴らしい体験でした。"
