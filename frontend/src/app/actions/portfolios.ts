@@ -3,7 +3,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { ensureSupabaseUser } from '@/lib/supabase/auth-helpers'
 
 const createPortfolioSchema = z.object({
@@ -19,7 +19,7 @@ export async function createPortfolio(formData: FormData) {
       title: formData.get('title'),
     })
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
 
     // 1. ユーザー情報の取得（Clerk ID から Supabase の users テーブルの ID を引く）
     let { data: user, error: userError } = await supabase
@@ -66,7 +66,7 @@ export async function getPortfolios() {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
     
     let { data: user } = await supabase
       .from('users')
@@ -111,12 +111,24 @@ export async function deletePortfolio(id: string) {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
+
+    let { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
 
     const { error } = await supabase
       .from('portfolios')
       .delete()
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) throw error
 
@@ -136,7 +148,7 @@ export async function getPortfolio(id: string) {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
 
     let { data: user } = await supabase
       .from('users')

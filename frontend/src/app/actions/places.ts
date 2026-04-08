@@ -3,7 +3,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/service-role'
 import { ensureSupabaseUser } from '@/lib/supabase/auth-helpers'
 
 // Places related actions
@@ -13,7 +13,7 @@ export async function getPlaces(portfolioId: string) {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
     
     let { data: user } = await supabase
       .from('users')
@@ -57,12 +57,34 @@ export async function deletePlace(id: string, portfolioId: string) {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
+
+    let { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
+
+    // Verify the portfolio belongs to the user
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('id', portfolioId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!portfolio) throw new Error('権限がありません')
 
     const { error } = await supabase
       .from('places')
       .delete()
       .eq('id', id)
+      .eq('portfolio_id', portfolioId)
 
     if (error) throw error
 
@@ -87,13 +109,34 @@ export async function createPlace(formData: FormData) {
     const { userId } = await auth()
     if (!userId) throw new Error('認証が必要です')
 
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
+
+    let { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_user_id', userId)
+      .single()
+
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
 
     // Validate inputs
     const validated = createPlaceSchema.parse({
       tabelog_url: formData.get('tabelog_url'),
       portfolio_id: formData.get('portfolio_id'),
     })
+
+    // Verify the portfolio belongs to the user
+    const { data: portfolio } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('id', validated.portfolio_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!portfolio) throw new Error('権限がありません')
 
     // Simulated AI Processing (Mock)
     const audioFile = formData.get('audio_file') as File | null
