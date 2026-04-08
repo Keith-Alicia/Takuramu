@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { ensureSupabaseUser } from '@/lib/supabase/auth-helpers'
 
 // Places related actions
 
@@ -14,13 +15,16 @@ export async function getPlaces(portfolioId: string) {
 
     const supabase = await createClient()
     
-    const { data: user } = await supabase
+    let { data: user } = await supabase
       .from('users')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
 
-    if (!user) throw new Error('ユーザーが見つかりません')
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
 
     // RLS will ensure user only fetches places for their portfolios
     const { data, error } = await supabase

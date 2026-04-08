@@ -4,7 +4,7 @@ import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { createServiceRoleClient } from '@/lib/supabase/service-role'
+import { ensureSupabaseUser } from '@/lib/supabase/auth-helpers'
 
 const createPortfolioSchema = z.object({
   title: z.string().min(1, 'タイトルは必須です').max(100, 'タイトルは100文字以内で入力してください'),
@@ -22,14 +22,15 @@ export async function createPortfolio(formData: FormData) {
     const supabase = await createClient()
 
     // 1. ユーザー情報の取得（Clerk ID から Supabase の users テーブルの ID を引く）
-    const { data: user, error: userError } = await supabase
+    let { data: user, error: userError } = await supabase
       .from('users')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
 
     if (userError || !user) {
-      throw new Error('ユーザーが見つかりません')
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
     }
 
     // 2. ポートフォリオの作成
@@ -67,13 +68,16 @@ export async function getPortfolios() {
 
     const supabase = await createClient()
     
-    const { data: user } = await supabase
+    let { data: user } = await supabase
       .from('users')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
 
-    if (!user) throw new Error('ユーザーが見つかりません')
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
 
     const { data, error } = await supabase
       .from('portfolios')
@@ -134,13 +138,16 @@ export async function getPortfolio(id: string) {
 
     const supabase = await createClient()
 
-    const { data: user } = await supabase
+    let { data: user } = await supabase
       .from('users')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
 
-    if (!user) throw new Error('ユーザーが見つかりません')
+    if (!user) {
+      user = await ensureSupabaseUser()
+      if (!user) throw new Error('ユーザーが見つかりません')
+    }
 
     const { data, error } = await supabase
       .from('portfolios')
