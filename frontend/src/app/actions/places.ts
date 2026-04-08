@@ -100,8 +100,8 @@ export async function deletePlace(id: string, portfolioId: string) {
 }
 
 const createPlaceSchema = z.object({
-  name: z.string().min(1, '店名は必須です').max(255, '店名は255文字以内で入力してください'),
-  tabelog_url: z.string().url('有効なURLを入力してください'),
+  name: z.string().max(255, '店名は255文字以内で入力してください').optional().or(z.literal('')),
+  tabelog_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   portfolio_id: z.string().uuid(),
 })
 
@@ -253,8 +253,8 @@ export async function getPlace(id: string, portfolioId: string) {
 
 const updatePlaceSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1, '店名は必須です').max(255, '店名は255文字以内で入力してください'),
-  tabelog_url: z.string().url('有効なURLを入力してください'),
+  name: z.string().max(255, '店名は255文字以内で入力してください').optional().or(z.literal('')),
+  tabelog_url: z.string().url('有効なURLを入力してください').optional().or(z.literal('')),
   portfolio_id: z.string().uuid(),
   deleted_photos: z.string().optional(), // JSON array of photo IDs to delete
 })
