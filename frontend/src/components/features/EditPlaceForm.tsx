@@ -9,16 +9,28 @@ import { Mic, Square, ImagePlus, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
-import { createPlace } from "@/app/actions/places";
+import { updatePlace } from "@/app/actions/places";
 
-export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
+type PlaceData = {
+  id: string;
+  name: string | null;
+  tabelog_url: string;
+  ai_generated_text: string | null;
+  photos: { id: string; storage_url: string; order_index: number }[];
+};
+
+export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; place: PlaceData }) {
   const router = useRouter();
   
   // State for form
-  const [name, setName] = useState("");
-  const [tabelogUrl, setTabelogUrl] = useState("");
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [name, setName] = useState(place.name || "");
+  const [tabelogUrl, setTabelogUrl] = useState(place.tabelog_url || "");
+  
+  // Photos
+  const [existingPhotos, setExistingPhotos] = useState(place.photos || []);
+  const [deletedPhotoIds, setDeletedPhotoIds] = useState<string[]>([]);
+  const [newPhotos, setNewPhotos] = useState<File[]>([]);
+  const [newPreviewUrls, setNewPreviewUrls] = useState<string[]>([]);
   
   // State for recording
   const [isRecording, setIsRecording] = useState(false);
@@ -31,27 +43,34 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
   // State for submission
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const totalPhotosCount = existingPhotos.length + newPhotos.length;
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     
     const newFiles = Array.from(e.target.files);
-    if (photos.length + newFiles.length > 3) {
-      toast.error("写真は最大3枚までです");
+    if (totalPhotosCount + newFiles.length > 3) {
+      toast.error("写真は合計3枚までです");
       return;
     }
 
-    const updatedPhotos = [...photos, ...newFiles];
-    setPhotos(updatedPhotos);
+    const updatedPhotos = [...newPhotos, ...newFiles];
+    setNewPhotos(updatedPhotos);
 
     // Create preview URLs
-    const newPreviewUrls = newFiles.map(file => URL.createObjectURL(file));
-    setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+    const createdUrls = newFiles.map(file => URL.createObjectURL(file));
+    setNewPreviewUrls(prev => [...prev, ...createdUrls]);
   };
 
-  const removePhoto = (index: number) => {
-    URL.revokeObjectURL(previewUrls[index]);
-    setPhotos(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  const removeExistingPhoto = (id: string) => {
+    setExistingPhotos(prev => prev.filter(p => p.id !== id));
+    setDeletedPhotoIds(prev => [...prev, id]);
+  };
+
+  const removeNewPhoto = (index: number) => {
+    URL.revokeObjectURL(newPreviewUrls[index]);
+    setNewPhotos(prev => prev.filter((_, i) => i !== index));
+    setNewPreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const startRecording = async () => {
@@ -112,25 +131,27 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
       toast.error("食べログのURLを入力してください");
       return;
     }
-    if (!audioBlob) {
-      toast.error("録音データがありません");
-      return;
-    }
 
     setIsSubmitting(true);
     
     try {
       const formData = new FormData();
+      formData.append("id", place.id);
+      formData.append("portfolio_id", portfolioId);
       formData.append("name", name);
       formData.append("tabelog_url", tabelogUrl);
-      formData.append("portfolio_id", portfolioId);
-      formData.append("audio_file", audioBlob);
-      photos.forEach((photo, i) => formData.append(`photo_${i}`, photo));
+      formData.append("deleted_photos", JSON.stringify(deletedPhotoIds));
+      
+      if (audioBlob) {
+        formData.append("audio_file", audioBlob);
+      }
+      
+      newPhotos.forEach((photo, i) => formData.append(`photo_${i}`, photo));
 
-      const result = await createPlace(formData);
+      const result = await updatePlace(formData);
       
       if (result.success) {
-        toast.success("記事が生成されました！");
+        toast.success("お店の情報が更新されました！");
         router.push(`/dashboard/p/${portfolioId}`);
         router.refresh();
       } else {
@@ -161,7 +182,7 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
 
       {/* URL Input */}
       <div className="space-y-3">
-        <Label htmlFor="url" className="text-sm text-muted-foreground font-light">食べログURL</Label>
+        <Label htmlFor="url" className="text-sm text-muted-foreground font-light">食べログURL *</Label>
         <Input 
           id="url"
           type="url" 
@@ -175,17 +196,30 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
       {/* Photo Upload */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <Label className="text-sm text-muted-foreground font-light">写真 (最大3枚)</Label>
-          <span className="text-xs text-muted-foreground font-light">{photos.length}/3</span>
+          <Label className="text-sm text-muted-foreground font-light">写真 (合計最大3枚)</Label>
+          <span className="text-xs text-muted-foreground font-light">{totalPhotosCount}/3</span>
         </div>
         
         <div className="grid grid-cols-3 gap-4">
-          {previewUrls.map((url, index) => (
-            <div key={url} className="relative aspect-square rounded-xl overflow-hidden bg-muted/50 border border-border/50 group">
-              <Image src={url} alt={`Preview ${index}`} fill className="object-cover" />
+          {existingPhotos.map((photo) => (
+            <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden bg-muted/50 border border-border/50 group">
+              <Image src={photo.storage_url} alt="Existing photo" fill className="object-cover" />
               <button 
                 type="button" 
-                onClick={() => removePhoto(index)}
+                onClick={() => removeExistingPhoto(photo.id)}
+                className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+
+          {newPreviewUrls.map((url, index) => (
+            <div key={url} className="relative aspect-square rounded-xl overflow-hidden bg-muted/50 border border-border/50 group">
+              <Image src={url} alt={`New Preview ${index}`} fill className="object-cover" />
+              <button 
+                type="button" 
+                onClick={() => removeNewPhoto(index)}
                 className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X className="w-3 h-3" />
@@ -193,10 +227,10 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
             </div>
           ))}
           
-          {photos.length < 3 && (
+          {totalPhotosCount < 3 && (
             <label className="relative aspect-square rounded-xl border border-dashed border-border/60 hover:bg-muted/20 hover:border-foreground/30 transition-colors cursor-pointer flex flex-col items-center justify-center text-muted-foreground">
               <ImagePlus className="w-6 h-6 mb-2" strokeWidth={1.5} />
-              <span className="text-xs font-light">写真を選択</span>
+              <span className="text-xs font-light">写真を追加</span>
               <input 
                 type="file" 
                 accept="image/*" 
@@ -209,14 +243,18 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
         </div>
       </div>
 
-      {/* Audio Recording */}
+      {/* Audio Recording (Optional for edit) */}
       <div className="space-y-3 pt-6 border-t border-border/50">
         <div className="text-center mb-6">
           <Label className="text-sm text-muted-foreground font-light mb-2 block">
-            ここが良かった！を独り言でどうぞ
+            記事を再生成する（任意）
           </Label>
+          <p className="text-xs text-muted-foreground/70 font-light mb-4">
+            現在の記事:<br/>
+            <span className="italic">{place.ai_generated_text}</span>
+          </p>
           <p className="text-xs text-muted-foreground/70 font-light">
-            「えーっと」「あのー」などのノイズはAIが綺麗に整えます
+            新たに音声を録音すると、記事が上書きされます。
           </p>
         </div>
 
@@ -254,7 +292,7 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
                 onClick={() => { setAudioBlob(null); setRecordingTime(0); }}
                 className="ml-3 text-muted-foreground hover:text-foreground underline underline-offset-2 text-xs"
               >
-                録り直す
+                キャンセル
               </button>
             </div>
           )}
@@ -265,16 +303,16 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
       <div className="pt-8">
         <Button 
           type="submit" 
-          disabled={!name || !tabelogUrl || !audioBlob || isSubmitting}
+          disabled={!name || !tabelogUrl || isSubmitting}
           className="w-full h-14 rounded-full text-base font-sans font-light tracking-wide"
         >
           {isSubmitting ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              AIで記事を生成中...
+              更新中...
             </>
           ) : (
-            "AIで記事を生成する"
+            "変更を保存する"
           )}
         </Button>
       </div>

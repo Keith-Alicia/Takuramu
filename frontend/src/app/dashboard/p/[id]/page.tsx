@@ -82,6 +82,16 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
                 )}
               </div>
               <div className="p-6 md:p-8">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="font-serif text-lg font-medium text-foreground">
+                    {place.name || "名称未設定"}
+                  </h3>
+                  <Link href={`/dashboard/p/${portfolioId}/edit/${place.id}`}>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                      編集
+                    </Button>
+                  </Link>
+                </div>
                 <p className="font-serif leading-relaxed text-sm md:text-base text-card-foreground">
                   {place.ai_generated_text}
                 </p>
