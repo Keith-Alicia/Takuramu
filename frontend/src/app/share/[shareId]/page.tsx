@@ -1,22 +1,24 @@
-import { mockPortfolios, mockPlaces } from "@/lib/mock-data";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getSharedPortfolioData } from "@/app/actions/public";
 
 export default async function SharedPortfolioPage({ params }: { params: Promise<{ shareId: string }> }) {
   const resolvedParams = await params;
   const shareId = resolvedParams.shareId;
-  const portfolio = mockPortfolios.find(p => p.share_id === shareId);
-  const places = portfolio ? mockPlaces[portfolio.id] : [];
-
-  if (!portfolio || !portfolio.is_public) {
+  
+  const result = await getSharedPortfolioData(shareId);
+  
+  if (!result.success || !result.data) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground font-light">
-        このページは公開されていません。
+        このページは公開されていないか、存在しません。
       </div>
     );
   }
+
+  const { portfolio, places } = result.data;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center">

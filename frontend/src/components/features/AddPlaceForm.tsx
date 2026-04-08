@@ -9,6 +9,8 @@ import { Mic, Square, ImagePlus, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
+import { createPlace } from "@/app/actions/places";
+
 export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
   const router = useRouter();
   
@@ -112,21 +114,22 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
 
     setIsSubmitting(true);
     
-    // Fake submission delay to mimic AI generation
     try {
-      // Create FormData (in a real app, send this to the Next.js API Route)
       const formData = new FormData();
       formData.append("tabelog_url", tabelogUrl);
       formData.append("portfolio_id", portfolioId);
       formData.append("audio_file", audioBlob);
       photos.forEach((photo, i) => formData.append(`photo_${i}`, photo));
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const result = await createPlace(formData);
       
-      toast.success("記事が生成されました！");
-      router.push(`/dashboard/p/${portfolioId}`);
-      router.refresh();
+      if (result.success) {
+        toast.success("記事が生成されました！");
+        router.push(`/dashboard/p/${portfolioId}`);
+        router.refresh();
+      } else {
+        toast.error(result.error || "エラーが発生しました");
+      }
     } catch (error) {
       toast.error("エラーが発生しました");
       console.error(error);

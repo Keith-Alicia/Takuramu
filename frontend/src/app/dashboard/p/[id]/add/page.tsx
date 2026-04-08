@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AddPlaceForm } from "@/components/features/AddPlaceForm";
-import { mockPortfolios } from "@/lib/mock-data";
+import { getPortfolio } from "../../../../actions/portfolios";
 
 export default async function AddPlacePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const portfolioId = resolvedParams.id;
-  const portfolio = mockPortfolios.find(p => p.id === portfolioId);
+  
+  const result = await getPortfolio(portfolioId);
+  const portfolio = result.success ? result.data : null;
 
   if (!portfolio) {
     return <div className="text-center py-12">データが見つかりません。</div>;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP, Noto_Serif_JP } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -25,10 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${notoSansJP.variable} ${notoSerifJP.variable} antialiased h-full`}>
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
-        <main className="flex-1 flex flex-col">{children}</main>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="ja" className={`${notoSansJP.variable} ${notoSerifJP.variable} antialiased h-full`}>
+        <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+          <main className="flex-1 flex flex-col">{children}</main>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

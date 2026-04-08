@@ -1,18 +1,25 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { mockPortfolios, mockPlaces } from "@/lib/mock-data";
 import { Plus, Share, ArrowLeft, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import { getPortfolio } from "../../../actions/portfolios";
+import { getPlaces } from "../../../actions/places";
 
 export default async function PortfolioDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const portfolioId = resolvedParams.id;
-  const portfolio = mockPortfolios.find(p => p.id === portfolioId);
-  const places = mockPlaces[portfolioId] || [];
+  
+  const [portfolioResult, placesResult] = await Promise.all([
+    getPortfolio(portfolioId),
+    getPlaces(portfolioId)
+  ]);
 
-  if (!portfolio) {
+  if (!portfolioResult.success || !portfolioResult.data) {
     return <div className="text-center py-12">データが見つかりません。</div>;
   }
+
+  const portfolio = portfolioResult.data;
+  const places = placesResult.success ? (placesResult.data || []) : [];
 
   return (
     <div className="space-y-12">

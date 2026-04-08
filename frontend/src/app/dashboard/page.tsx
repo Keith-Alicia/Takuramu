@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Plus } from "lucide-react";
-import { mockPortfolios } from "@/lib/mock-data";
+import { getPortfolios } from "../actions/portfolios";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const result = await getPortfolios();
+  const portfolios = result.success ? result.data || [] : [];
+
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-end">
@@ -22,13 +25,18 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {mockPortfolios.length === 0 ? (
-        <div className="text-center py-24 bg-muted/20 rounded-2xl border border-dashed border-border/50">
+      {portfolios.length === 0 ? (
+        <div className="text-center py-24 bg-muted/20 rounded-2xl border border-dashed border-border/50 flex flex-col items-center gap-4">
           <p className="text-muted-foreground font-light">まだ記録がありません。</p>
+          <Link href="/dashboard/new">
+            <Button variant="outline" className="rounded-full px-6 font-sans font-light tracking-wide shadow-none">
+              最初のリストを作成する
+            </Button>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockPortfolios.map((portfolio) => (
+          {portfolios.map((portfolio) => (
             <Link key={portfolio.id} href={`/dashboard/p/${portfolio.id}`}>
               <Card className="h-full hover:bg-muted/30 transition-colors border-border/50 shadow-none cursor-pointer flex flex-col justify-between group">
                 <CardHeader className="pb-4">
@@ -36,7 +44,7 @@ export default function DashboardPage() {
                     {portfolio.title}
                   </CardTitle>
                   <CardDescription className="font-light mt-2">
-                    {portfolio.place_count} 件のお店
+                    {portfolio.place_count || 0} 件のお店
                   </CardDescription>
                 </CardHeader>
                 <CardFooter className="pt-4 text-xs text-muted-foreground font-light border-t border-border/30 mx-6 mb-6 pb-0">

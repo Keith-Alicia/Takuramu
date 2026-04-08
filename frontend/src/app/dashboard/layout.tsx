@@ -1,12 +1,21 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { ensureSupabaseUser } from "@/lib/supabase/auth-helpers";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  await ensureSupabaseUser();
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Dashboard Header */}
@@ -17,17 +26,14 @@ export default function DashboardLayout({
           </h1>
         </Link>
         <nav className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="hidden md:flex">
-            <Link href="/" className="flex items-center">
-              <LogOut className="w-4 h-4 mr-2" />
-              <span className="font-sans font-light">ログアウト</span>
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Link href="/" className="flex items-center">
-              <LogOut className="w-4 h-4" />
-            </Link>
-          </Button>
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 rounded-full"
+              }
+            }}
+          />
         </nav>
       </header>
 
