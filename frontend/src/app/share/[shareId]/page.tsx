@@ -51,7 +51,7 @@ export default async function SharedPortfolioPage({ params }: { params: Promise<
               {/* Optional: Add indicators if multiple photos exist */}
               {place.photos.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {place.photos.map((_, i) => (
+                  {place.photos.map((_: unknown, i: number) => (
                     <div key={i} className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/50'}`} />
                   ))}
                 </div>

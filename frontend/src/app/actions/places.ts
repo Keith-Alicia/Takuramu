@@ -297,15 +297,10 @@ export async function updatePlace(formData: FormData) {
     if (!portfolio) throw new Error('権限がありません')
 
     // Optional AI Processing (Mock) if new audio provided
-    const audioFile = formData.get('audio_file') as File | null
-    let aiGeneratedText: string | undefined = undefined;
-    
-    if (audioFile && audioFile.size > 0) {
-      aiGeneratedText = "（再生成されたテキスト）静かで落ち着いた雰囲気の店内。シェフのこだわりが詰まった料理の数々に感動しました。また特別な日に訪れたいと思える、素晴らしい体験でした。"
-    }
+    const aiGeneratedText = formData.get('ai_generated_text') as string | undefined;
 
     // 1. Update place
-    const updateData: any = {
+    const updateData: { name: string; tabelog_url: string; ai_generated_text?: string } = {
       name: validated.name,
       tabelog_url: validated.tabelog_url,
     }

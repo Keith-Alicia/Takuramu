@@ -42,6 +42,9 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
 
   // State for submission
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [generatedText, setGeneratedText] = useState(place.ai_generated_text || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   const totalPhotosCount = existingPhotos.length + newPhotos.length;
 
@@ -121,18 +124,54 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) {
       toast.error("店名を入力してください");
       return;
     }
-    if (!tabelogUrl) {
-      toast.error("食べログのURLを入力してください");
+    if (!audioBlob) {
+      toast.error("録音データがありません");
       return;
     }
 
     setIsSubmitting(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append("audio_file", audioBlob, "recording.webm");
+      formData.append("tabelog_url", tabelogUrl);
+
+      const response = await fetch('/api/generate-article', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setGeneratedText(result.generatedText);
+        setIsPreviewMode(true);
+        toast.success("記事が再生成されました！内容を確認してください。");
+      } else {
+        toast.error(result.error || "記事の生成に失敗しました");
+      }
+    } catch (error) {
+      toast.error("通信エラーが発生しました");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!name) {
+      toast.error("店名を入力してください");
+      return;
+    }
+
+    setIsSaving(true);
     
     try {
       const formData = new FormData();
@@ -141,10 +180,7 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
       formData.append("name", name);
       formData.append("tabelog_url", tabelogUrl);
       formData.append("deleted_photos", JSON.stringify(deletedPhotoIds));
-      
-      if (audioBlob) {
-        formData.append("audio_file", audioBlob);
-      }
+      formData.append("ai_generated_text", generatedText);
       
       newPhotos.forEach((photo, i) => formData.append(`photo_${i}`, photo));
 
@@ -161,12 +197,52 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
       toast.error("エラーが発生しました");
       console.error(error);
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
 
+  if (isPreviewMode) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-4">
+          <Label className="text-lg font-medium text-foreground">再生成された記事プレビュー</Label>
+          <div className="p-6 bg-muted/30 rounded-2xl border border-border/50 text-foreground font-serif leading-relaxed whitespace-pre-wrap">
+            {generatedText}
+          </div>
+        </div>
+
+        <div className="flex gap-4 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => setIsPreviewMode(false)}
+            className="flex-1 h-12 rounded-xl"
+            disabled={isSaving}
+          >
+            やり直す
+          </Button>
+          <Button 
+            type="button" 
+            onClick={() => handleSave()}
+            disabled={isSaving}
+            className="flex-[2] h-12 rounded-xl text-base"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                保存中...
+              </>
+            ) : (
+              "この内容で上書き保存する"
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-10">
+    <form onSubmit={handleSave} className="space-y-10">
       {/* Name Input */}
       <div className="space-y-3">
         <Label htmlFor="name" className="text-sm text-muted-foreground font-light">店名 *</Label>
@@ -254,7 +330,7 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
             <span className="italic">{place.ai_generated_text}</span>
           </p>
           <p className="text-xs text-muted-foreground/70 font-light">
-            新たに音声を録音すると、記事が上書きされます。
+            新たに音声を録音して再生成すると、記事が上書きされます。
           </p>
         </div>
 
@@ -284,16 +360,30 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
           )}
 
           {audioBlob && !isRecording && (
-            <div className="text-sm font-light text-primary flex items-center mt-2 bg-primary/10 px-4 py-2 rounded-full">
-              <Mic className="w-4 h-4 mr-2" />
-              {formatTime(recordingTime)} の音声が録音されました
-              <button 
-                type="button" 
-                onClick={() => { setAudioBlob(null); setRecordingTime(0); }}
-                className="ml-3 text-muted-foreground hover:text-foreground underline underline-offset-2 text-xs"
+            <div className="flex flex-col items-center gap-4 mt-2">
+              <div className="text-sm font-light text-primary flex items-center bg-primary/10 px-4 py-2 rounded-full">
+                <Mic className="w-4 h-4 mr-2" />
+                {formatTime(recordingTime)} の音声が録音されました
+                <button 
+                  type="button" 
+                  onClick={() => { setAudioBlob(null); setRecordingTime(0); }}
+                  className="ml-3 text-muted-foreground hover:text-foreground underline underline-offset-2 text-xs"
+                >
+                  キャンセル
+                </button>
+              </div>
+              <Button 
+                type="button"
+                onClick={handleGenerate}
+                disabled={isSubmitting}
+                className="rounded-full shadow-none"
               >
-                キャンセル
-              </button>
+                {isSubmitting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />再生成中...</>
+                ) : (
+                  "この音声で記事を再生成する"
+                )}
+              </Button>
             </div>
           )}
         </div>
@@ -303,10 +393,10 @@ export function EditPlaceForm({ portfolioId, place }: { portfolioId: string; pla
       <div className="pt-8">
         <Button 
           type="submit" 
-          disabled={!name || !tabelogUrl || isSubmitting}
+          disabled={!name || isSaving}
           className="w-full h-14 rounded-full text-base font-sans font-light tracking-wide"
         >
-          {isSubmitting ? (
+          {isSaving ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               更新中...

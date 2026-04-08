@@ -29,7 +29,7 @@ export function NewPortfolioForm() {
         } else {
           setError(result.error || '作成に失敗しました')
         }
-      } catch (err) {
+      } catch {
         setError('予期しないエラーが発生しました')
       }
     })

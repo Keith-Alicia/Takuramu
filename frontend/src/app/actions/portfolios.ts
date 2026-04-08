@@ -22,11 +22,13 @@ export async function createPortfolio(formData: FormData) {
     const supabase = createServiceRoleClient()
 
     // 1. ユーザー情報の取得（Clerk ID から Supabase の users テーブルの ID を引く）
-    let { data: user, error: userError } = await supabase
+    const { data: initialUser, error: userError } = await supabase
       .from('users')
       .select('id')
       .eq('clerk_user_id', userId)
       .single()
+
+    let user = initialUser
 
     if (userError || !user) {
       user = await ensureSupabaseUser()

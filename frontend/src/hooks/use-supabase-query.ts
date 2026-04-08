@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { PostgrestFilterBuilder } from '@supabase/postgrest-js'
-
 export function useSupabaseQuery<T>(
-  query: (client: ReturnType<typeof createClient>) => PostgrestFilterBuilder<any, any, T[]>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: (client: ReturnType<typeof createClient>) => Promise<{ data: T[] | null; error: any }>
 ) {
   const [data, setData] = useState<T[] | null>(null)
   const [loading, setLoading] = useState(true)

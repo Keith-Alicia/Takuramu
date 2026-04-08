@@ -69,7 +69,7 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
       audioChunksRef.current = [];
 
       // --- 音量取得のためのAudioContext設定 ---
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
       const analyser = audioContext.createAnalyser();
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
@@ -146,14 +146,11 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) {
-      toast.error("店名を入力してください");
+    if (!name && !tabelogUrl) {
+      toast.error("店名か食べログURLのどちらかを入力してください");
       return;
     }
-    if (!tabelogUrl) {
-      toast.error("食べログのURLを入力してください");
-      return;
-    }
+    // 食べログURLの必須チェックを削除
     if (!audioBlob) {
       toast.error("録音データがありません");
       return;
@@ -265,7 +262,7 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
     <form onSubmit={handleGenerate} className="space-y-10">
       {/* Name Input */}
       <div className="space-y-3">
-        <Label htmlFor="name" className="text-sm text-muted-foreground font-light">店名 *</Label>
+        <Label htmlFor="name" className="text-sm text-muted-foreground font-light">店名</Label>
         <Input 
           id="name"
           type="text" 
@@ -409,7 +406,7 @@ export function AddPlaceForm({ portfolioId }: { portfolioId: string }) {
       <div className="pt-8">
         <Button 
           type="submit" 
-          disabled={!name || !tabelogUrl || !audioBlob || isSubmitting}
+          disabled={(!name && !tabelogUrl) || !audioBlob || isSubmitting}
           className="w-full h-14 rounded-full text-base font-sans font-light tracking-wide"
         >
           {isSubmitting ? (
