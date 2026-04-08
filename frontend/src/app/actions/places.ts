@@ -149,8 +149,8 @@ export async function createPlace(formData: FormData) {
       .from('places')
       .insert({
         portfolio_id: validated.portfolio_id,
-        name: validated.name,
-        tabelog_url: validated.tabelog_url,
+        name: validated.name || '',
+        tabelog_url: validated.tabelog_url || '',
         ai_generated_text: aiGeneratedText,
       })
       .select()
@@ -301,8 +301,8 @@ export async function updatePlace(formData: FormData) {
 
     // 1. Update place
     const updateData: { name: string; tabelog_url: string; ai_generated_text?: string } = {
-      name: validated.name,
-      tabelog_url: validated.tabelog_url,
+      name: validated.name || '',
+      tabelog_url: validated.tabelog_url || '',
     }
     if (aiGeneratedText) {
       updateData.ai_generated_text = aiGeneratedText
