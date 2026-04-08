@@ -22,16 +22,16 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-4xl mx-auto w-full">
         <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight font-light mb-8 text-balance">
-          語るだけで、
+          ひとつの記憶が、
           <br className="md:hidden" />
-          記憶が作品になる。
+          次の「たくらみ」へ。
         </h2>
         <p className="font-sans text-muted-foreground text-sm md:text-base lg:text-lg mb-12 max-w-2xl font-light leading-relaxed">
-          あなたのお気に入りの飲食店を、写真と「独り言」で残すだけ。
+          誰かの熱量ある体験は、誰かの心を動かし、新しい物語の始まりになります。
           <br className="hidden md:inline" />
-          AIが文脈を読み取り、洗練されたエッセイのような紹介記事を自動生成します。
+          あなたの声で紡がれた記憶が、洗練された一つの作品となり、
           <br className="hidden md:inline" />
-          URLひとつで、その熱量を友人へ美しく共有しましょう。
+          また別の誰かの「たくらみ」へと繋がっていく場所です。
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
