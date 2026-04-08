@@ -10,11 +10,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-12">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-serif font-light mb-2">あなたのたくらみ</h2>
-          <p className="text-muted-foreground font-sans font-light text-sm">
-            記録した飲食店リスト
+          <p className="text-muted-foreground font-serif font-light text-sm mb-1">
+            記憶を編んで、次を企む。
+          </p>
+          <p className="text-muted-foreground font-sans font-light text-xs opacity-70">
+            記録したプランや場所のリスト
           </p>
         </div>
         <Link href="/dashboard/new">

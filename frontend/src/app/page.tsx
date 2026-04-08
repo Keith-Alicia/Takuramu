@@ -22,17 +22,25 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-4xl mx-auto w-full">
         <h2 className="font-serif text-4xl md:text-6xl lg:text-7xl leading-tight font-light mb-8 text-balance">
-          ひとつの記憶が、
+          記憶を編んで、
           <br className="md:hidden" />
-          次の「たくらみ」へ。
+          次を企む。
         </h2>
-        <p className="font-sans text-muted-foreground text-sm md:text-base lg:text-lg mb-12 max-w-2xl font-light leading-relaxed">
-          誰かの熱量ある体験は、誰かの心を動かし、新しい物語の始まりになります。
-          <br className="hidden md:inline" />
-          あなたの声で紡がれた記憶が、洗練された一つの作品となり、
-          <br className="hidden md:inline" />
-          また別の誰かの「たくらみ」へと繋がっていく場所です。
-        </p>
+        <div className="font-sans text-muted-foreground text-sm md:text-base lg:text-lg mb-12 max-w-2xl font-light leading-relaxed space-y-6">
+          <p>
+            ふと訪れた街の匂い、心動かされた瞬間の熱量。
+            <br className="hidden md:inline" />
+            あなたの声で残された何気ない日常の記憶は、やがて美しいひとつの物語として編み込まれます。
+          </p>
+          <p>
+            そして、共有されたページは誰かの心を揺さぶり、
+            <br className="hidden md:inline" />
+            「自分もそこへ行きたい」「体験をつくりたい」という次なる企みの連鎖を生み出していく。
+          </p>
+          <p>
+            他者の記憶を旅して、あなただけの新たな物語を紡ぎ出す場所です。
+          </p>
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <Link href="/dashboard">
