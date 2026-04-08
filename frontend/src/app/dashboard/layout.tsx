@@ -27,7 +27,6 @@ export default async function DashboardLayout({
         </Link>
         <nav className="flex items-center gap-4">
           <UserButton
-            afterSignOutUrl="/"
             appearance={{
               elements: {
                 avatarBox: "w-8 h-8 rounded-full"
