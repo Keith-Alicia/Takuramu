@@ -13,7 +13,7 @@ export default function DashboardLayout({
       <header className="px-6 py-6 md:px-12 flex justify-between items-center border-b bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
           <h1 className="font-serif text-lg tracking-widest font-light">
-            PORTFOLIO
+            たくらむ
           </h1>
         </Link>
         <nav className="flex items-center gap-4">

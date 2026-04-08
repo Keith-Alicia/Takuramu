@@ -11,7 +11,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
   const places = mockPlaces[portfolioId] || [];
 
   if (!portfolio) {
-    return <div className="text-center py-12">ポートフォリオが見つかりません。</div>;
+    return <div className="text-center py-12">データが見つかりません。</div>;
   }
 
   return (

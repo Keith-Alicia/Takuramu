@@ -25,7 +25,7 @@ export type Photo = {
 export const mockPortfolios: Portfolio[] = [
   {
     id: "p1",
-    title: "横浜の中華",
+    title: "横浜中華街",
     share_id: "share_yokohama_chuka",
     is_public: true,
     created_at: "2026-04-01T10:00:00Z",
@@ -33,8 +33,8 @@ export const mockPortfolios: Portfolio[] = [
   },
   {
     id: "p2",
-    title: "デートで使えるカフェ",
-    share_id: "share_date_cafes",
+    title: "学芸大学",
+    share_id: "share_gakudai",
     is_public: false,
     created_at: "2026-04-05T14:30:00Z",
     place_count: 0,

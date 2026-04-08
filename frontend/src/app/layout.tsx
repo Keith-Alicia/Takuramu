@@ -15,8 +15,8 @@ const notoSerifJP = Noto_Serif_JP({
 });
 
 export const metadata: Metadata = {
-  title: "お店ポートフォリオ (Takram風)",
-  description: "AIが生成する、エモーショナルな飲食店紹介ポートフォリオ",
+  title: "たくらむ",
+  description: "AIが生成する、エモーショナルな飲食店紹介",
 };
 
 export default function RootLayout({

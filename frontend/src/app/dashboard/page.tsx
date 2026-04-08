@@ -9,9 +9,9 @@ export default function DashboardPage() {
     <div className="space-y-12">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl md:text-3xl font-serif font-light mb-2">My Portfolios</h2>
+          <h2 className="text-2xl md:text-3xl font-serif font-light mb-2">あなたのたくらみ</h2>
           <p className="text-muted-foreground font-sans font-light text-sm">
-            あなたの体験を記録した飲食店リスト
+            記録した飲食店リスト
           </p>
         </div>
         <Link href="/dashboard/new">
@@ -24,7 +24,7 @@ export default function DashboardPage() {
 
       {mockPortfolios.length === 0 ? (
         <div className="text-center py-24 bg-muted/20 rounded-2xl border border-dashed border-border/50">
-          <p className="text-muted-foreground font-light">まだポートフォリオがありません。</p>
+          <p className="text-muted-foreground font-light">まだ記録がありません。</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

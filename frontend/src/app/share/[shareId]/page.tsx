@@ -82,7 +82,7 @@ export default async function SharedPortfolioPage({ params }: { params: Promise<
       <div className="fixed bottom-0 w-full p-4 bg-gradient-to-t from-background via-background/90 to-transparent flex justify-center z-50 pb-8 pointer-events-none">
         <Link href="/">
           <Button size="lg" className="rounded-full shadow-2xl px-8 font-sans font-light tracking-wide pointer-events-auto hover:scale-105 transition-transform">
-            自分もこのアプリでお店リストを作る
+            自分も「たくらむ」をはじめる
           </Button>
         </Link>
       </div>

@@ -9,7 +9,7 @@ export default async function AddPlacePage({ params }: { params: Promise<{ id: s
   const portfolio = mockPortfolios.find(p => p.id === portfolioId);
 
   if (!portfolio) {
-    return <div className="text-center py-12">ポートフォリオが見つかりません。</div>;
+    return <div className="text-center py-12">データが見つかりません。</div>;
   }
 
   return (

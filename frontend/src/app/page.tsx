@@ -7,7 +7,7 @@ export default function Home() {
       {/* Header */}
       <header className="px-6 py-8 md:px-12 md:py-12 flex justify-between items-center">
         <h1 className="font-serif text-xl md:text-2xl tracking-widest font-light">
-          PORTFOLIO
+          たくらむ
         </h1>
         <nav>
           {/* For now, just a direct link to dashboard. In the future, this will be Clerk's SignIn/SignUp */}
@@ -37,7 +37,7 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <Link href="/dashboard">
             <Button size="lg" className="rounded-full px-8 font-sans tracking-wide">
-              ポートフォリオを作成する
+              たくらみをはじめる
             </Button>
           </Link>
         </div>
@@ -45,7 +45,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="px-6 py-8 md:px-12 md:py-12 text-center md:text-left text-xs text-muted-foreground font-light">
-        <p>&copy; {new Date().getFullYear()} Restaurant Portfolio App.</p>
+        <p>&copy; {new Date().getFullYear()} たくらむ</p>
       </footer>
     </div>
   );
